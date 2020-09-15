@@ -1,58 +1,103 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+    <el-progress :percentage="rate"></el-progress>
+
+    <div v-html="htmlJson"></div>
+
   </div>
 </template>
 
 <script>
+    let Base64 = require('js-base64').Base64
+
 export default {
   name: 'HelloWorld',
   props: {
     msg: String
-  }
+  },
+    data () {
+        return {
+            currentNum: 50,
+            totalNum: 100,
+            htmlJson:''
+        }
+    },
+    mounted() {
+        // let url = 'https://rosefinch.test1.bestpay.net/groups/getGroupsByType?type=group';
+        //
+        // var strs = new Array(); //定义一数组
+        // strs = url.split("?"); //字符分割
+        // window.console.log('==================', strs);
+
+
+        let encodeStr = 'LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLTkzNDUyMzAwMDAyMzM1MDUyNTkzMzgwMw0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJuYW1lIg0KDQp3YW5nDQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tOTM0NTIzMDAwMDIzMzUwNTI1OTMzODAzDQpDb250ZW50LURpc3Bvc2l0aW9uOiBmb3JtLWRhdGE7IG5hbWU9ImFnZSINCg0KMjANCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS05MzQ1MjMwMDAwMjMzNTA1MjU5MzM4MDMNCkNvbnRlbnQtRGlzcG9zaXRpb246IGZvcm0tZGF0YTsgbmFtZT0iZGF0YSINCg0KMjAyMC0wODA4DQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tOTM0NTIzMDAwMDIzMzUwNTI1OTMzODAzLS0NCg==';
+        let contentType = 'multipart/form-data; boundary=--------------------------934523000023350525933803';
+        let decodeDataStr = Base64.decode(encodeStr);
+        window.console.log('===== encodeStr =====\n', encodeStr);
+        window.console.log('===== contentType =====\n', contentType);
+        window.console.log('===== decodeDataStr =====\n', decodeDataStr);
+
+        let boundaryKey = '';///分隔key
+        if (contentType.indexOf("boundary") != -1) {
+            ///获取分隔key
+            let boundaryKeyListTemp = contentType.split(';');
+            let boundaryKeyStrTemp = boundaryKeyListTemp[1];
+            boundaryKeyListTemp = boundaryKeyStrTemp.split('=');
+            boundaryKey = boundaryKeyListTemp[1];
+            window.console.log('===== boundaryKey =====\n', boundaryKey);
+        }
+        if (!boundaryKey.length) {
+            window.console.log('boundary不存在，参数异常');
+            return;
+        }
+
+        ///去除 \r\n
+        decodeDataStr = decodeDataStr.replace(/\r\n/g, '');
+        window.console.log('===== decodeDataStr =====\n', decodeDataStr);
+
+        ///按照boundaryKey分隔数据
+        let paramStrListTemp = decodeDataStr.split(boundaryKey);
+        window.console.log('===== paramStrListTemp =====\n', paramStrListTemp);
+        let paramStrList = [];
+        for (let strTemp of paramStrListTemp) {
+            if (strTemp.indexOf('name') != -1) {
+                strTemp = strTemp.replace('Content-Disposition: form-data; ', '');
+                strTemp = strTemp.replace('--', '');
+                strTemp = strTemp.replace('name="', '');
+                paramStrList.push(strTemp);
+            }
+        }
+        window.console.log('===== paramStrList =====\n', paramStrList);
+
+        ///参数重组对象
+        let paramData = {};
+        for (let strTemp of paramStrList) {
+            let strListTemp = strTemp.split('"');
+            paramData[strListTemp[0]] = strListTemp[1];
+        }
+        window.console.log('===== paramData =====\n', paramData);
+
+
+
+
+    },
+    computed: {
+        rate () {
+            return this.currentNum / this.totalNum * 100;
+        }
+    },
+
+    methods: {
+
+    },
+
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
+  .hello {
+    display: flex;
+    flex-direction: column;
+  }
 </style>

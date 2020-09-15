@@ -7,6 +7,12 @@
   </div>
 </template>
 
+<script>
+    export default {
+
+    }
+</script>
+
 <style>
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
@@ -18,6 +24,8 @@
 
 #nav {
   padding: 30px;
+  display: flex;
+  flex-direction: column;
 }
 
 #nav a {
@@ -28,4 +36,8 @@
 #nav a.router-link-exact-active {
   color: #42b983;
 }
+
+
+
+
 </style>
